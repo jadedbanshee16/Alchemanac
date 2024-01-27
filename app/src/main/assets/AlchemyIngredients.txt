@@ -1,0 +1,5 @@
+1:Fire Flower:flora:Southernfold:uncommon:desert:Fire,Life:Cool flower with bright red petals:make hot,make cold
+2:Plains Grass:flora:Southernfold:rare:plains:Life:Long, lush grass:attract magic
+3:Panther Eye:fauna:Northernfold:legendary:jungle:Dark,Life:A single, unblinking eye:transpire
+4:Alchemical Supplies:mineral:Anywhere:common:towns:None:An assortment of supplies for alchemical use:none
+5:Starlight Dust:special:Unknown:otherworldy:forest:Dark,Light:A silvery dust that glows softly:none
