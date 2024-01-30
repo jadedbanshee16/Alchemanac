@@ -41,6 +41,8 @@ public class AlchemyClass {
     public String getType() { return type.name(); }
     public String getRarity() { return rarity.name(); }
     public String getLocationFull() { return region.name() + ", " + location.name();}
+    public String getRegion(){ return region.name(); }
+    public String getLocation() { return location.name(); }
     public String getProperties() {
         //Convert properties into a string list.
         String[] p = new String[propertiesList.length];
@@ -54,7 +56,29 @@ public class AlchemyClass {
 
         return String.join(", ", p) + ", " + String.join(", ", p2);
     }
+
+    public String getProperty(int ind){ return propertiesList[ind].name(); }
+
+    public String getProp() {
+        String[] p = new String[propertiesList.length];
+        for(int i = 0; i < propertiesList.length; i++){
+            p[i] = propertiesList[i].name();
+        }
+
+        return String.join(",", p);
+    }
+    public int getPropertySize() { return propertiesList.length; }
+
     public String getDescription() { return description; }
+
+    public String getSpecials() {
+        String[] p2 = new String[specialProperties.length];
+        for(int i = 0; i < p2.length; i++){
+            p2[i] = specialProperties[i];
+        }
+
+        return String.join(",", p2);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public int getCol(){

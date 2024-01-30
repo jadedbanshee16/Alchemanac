@@ -69,7 +69,7 @@ public class MainActivity2 extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    onButtonShowFormWindowClick();
+                    onButtonShowFormWindowClick(-1);
                 } ;
             }
         });
@@ -101,6 +101,30 @@ public class MainActivity2 extends AppCompatActivity {
             }
         });
 
+        itemView.findViewById(R.id.item_edit_btn).setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onClick(View v) {
+                onButtonShowFormWindowClick(index);
+                popupWindow.dismiss();
+            }
+        });
+
+        itemView.findViewById(R.id.item_delete_btn).setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onClick(View v) {
+                deleteItemInList(index);
+                try {
+                    saveList();
+                    getNewList(findViewById(R.id.items_list));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                popupWindow.dismiss();
+            }
+        });
+
         // dismiss the popup window when touched
         //DEBUG ONLY
         /*itemView.setOnTouchListener(new View.OnTouchListener() {
@@ -113,8 +137,7 @@ public class MainActivity2 extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void onButtonShowFormWindowClick() {
-
+    public void onButtonShowFormWindowClick(int pos) {
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater)
                 getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -140,6 +163,63 @@ public class MainActivity2 extends AppCompatActivity {
         Spinner locationSpinner = (Spinner) itemView.findViewById(R.id.dropdown_location);
         locationSpinner.setAdapter(new ArrayAdapter<AlchemyLocation>(this, android.R.layout.simple_spinner_item, AlchemyLocation.values()));
 
+        //Now, if position is valid (0 or over, then add that stuff to the set.
+        if(pos >= 0){
+            typeSpinner.setSelection(AlchemyTypes.valueOf(items.get(pos).getType()).ordinal());
+            raritySpinner.setSelection(AlchemyRarity.valueOf(items.get(pos).getRarity()).ordinal());
+            regionSpinner.setSelection(AlchemyRegion.valueOf(items.get(pos).getRegion()).ordinal());
+            locationSpinner.setSelection(AlchemyLocation.valueOf(items.get(pos).getLocation()).ordinal());
+
+            CheckBox box;
+            //Set the dropbox systems.
+            for(int i = 0; i < items.get(pos).getPropertySize(); i++){
+
+                if(AlchemyProperties.valueOf(items.get(pos).getProperty(i)).ordinal() == 0){
+                    box = (CheckBox) itemView.findViewById(R.id.propbox1);
+                    box.setChecked(true);
+                }
+                if(AlchemyProperties.valueOf(items.get(pos).getProperty(i)).ordinal() == 1){
+                    box = (CheckBox) itemView.findViewById(R.id.propbox2);
+                    box.setChecked(true);
+                }
+                if(AlchemyProperties.valueOf(items.get(pos).getProperty(i)).ordinal() == 2){
+                    box = (CheckBox) itemView.findViewById(R.id.propbox3);
+                    box.setChecked(true);
+                }
+                if(AlchemyProperties.valueOf(items.get(pos).getProperty(i)).ordinal() == 3){
+                    box = (CheckBox) itemView.findViewById(R.id.propbox4);
+                    box.setChecked(true);
+                }
+                if(AlchemyProperties.valueOf(items.get(pos).getProperty(i)).ordinal() == 4){
+                    box = (CheckBox) itemView.findViewById(R.id.propbox5);
+                    box.setChecked(true);
+                }
+                if(AlchemyProperties.valueOf(items.get(pos).getProperty(i)).ordinal() == 5){
+                    box = (CheckBox) itemView.findViewById(R.id.propbox6);
+                    box.setChecked(true);
+                }
+                if(AlchemyProperties.valueOf(items.get(pos).getProperty(i)).ordinal() == 6){
+                    box = (CheckBox) itemView.findViewById(R.id.propbox7);
+                    box.setChecked(true);
+                }
+                if(AlchemyProperties.valueOf(items.get(pos).getProperty(i)).ordinal() == 7){
+                    box = (CheckBox) itemView.findViewById(R.id.propbox8);
+                    box.setChecked(true);
+                }
+
+                //Complete text sections.
+                //Name.
+                EditText nam = (EditText) itemView.findViewById(R.id.form_name);
+                nam.setText(items.get(pos).getName());
+                EditText other = (EditText) itemView.findViewById(R.id.form_special_text);
+                other.setText(items.get(pos).getSpecials());
+                EditText desc = (EditText) itemView.findViewById(R.id.form_description_text);
+                desc.setText(items.get(pos).getDescription());
+            }
+        }
+
+
+
         //Make the 'X' close the window.
         itemView.findViewById(R.id.cancel_btn).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -149,6 +229,11 @@ public class MainActivity2 extends AppCompatActivity {
 
         itemView.findViewById(R.id.submit_btn).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                //If making an edit (ising a position above 0), then delete the original.
+                if(pos >= 0){
+                    deleteItemInList(pos);
+                }
+
                 EditText nam = (EditText) itemView.findViewById(R.id.form_name);
                 Spinner ty = (Spinner) itemView.findViewById(R.id.dropdown_type);
                 Spinner reg = (Spinner) itemView.findViewById(R.id.dropdown_region);
@@ -191,22 +276,27 @@ public class MainActivity2 extends AppCompatActivity {
                 EditText desc = (EditText) itemView.findViewById(R.id.form_description_text);
                 EditText spec = (EditText) itemView.findViewById(R.id.form_special_text);
 
-                try {
-                    addNewIngredient(items.size() + 1,
-                                    nam.getText().toString(),
-                                    ty.getSelectedItem().toString(),
-                                    reg.getSelectedItem().toString(),
-                                    rar.getSelectedItem().toString(),
-                                    loc.getSelectedItem().toString(),
-                                    sb.toString(),
-                                    desc.getText().toString(),
-                                    spec.getText().toString());
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
+                String[] specArr = String.valueOf(spec.getText()).split(",");
+                String[] propArr = sb.toString().split(",");
+                AlchemyProperties[] realPropArr = new AlchemyProperties[propArr.length];
+                for(int f = 0; f < realPropArr.length; f++){
+                    realPropArr[f] = AlchemyProperties.valueOf(propArr[f]);
                 }
+
+
+                AlchemyClass newItem = new AlchemyClass(items.size() + 1, nam.getText().toString(),
+                        ty.getSelectedItem().toString(),
+                        reg.getSelectedItem().toString(),
+                        rar.getSelectedItem().toString(),
+                        AlchemyLocation.valueOf(loc.getSelectedItem().toString()),
+                        realPropArr,
+                        desc.getText().toString(),
+                        specArr);
+                items.add(newItem);
 
                 //Now, create new list.
                 try {
+                    saveList();
                     getNewList(findViewById(R.id.items_list));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -312,14 +402,11 @@ public class MainActivity2 extends AppCompatActivity {
 
         //If the file doesn't exist, then create a new one and add stuff from assets folder.
         if(!f.exists()){
-            Log.d("debug", "does not exist");
             String str1 = "";
             //Load the assets file into the new file.
             InputStream f1 = getAssets().open("AlchemyIngredients.txt");
-            Log.d("debug", "file created");
             BufferedReader r1 = new BufferedReader(new InputStreamReader(f1));
             while((str1 = r1.readLine()) != null){
-                Log.d("debug", "Add line: " + str1);
                 try (OutputStreamWriter wr = new OutputStreamWriter(this.openFileOutput("AlchemyIngredients.txt", Context.MODE_APPEND))) {
                     wr.write(str1 + "\n");
                 } catch (IOException e) {
@@ -361,6 +448,32 @@ public class MainActivity2 extends AppCompatActivity {
         gridviewAdapter = new myListAdapter(this, R.layout.listitem, items);
         //Now create the new points.
         v.setAdapter(gridviewAdapter);
+    }
+
+    private void saveList() throws FileNotFoundException {
+        //First, clear the list.
+        try (OutputStreamWriter wr = new OutputStreamWriter(this.openFileOutput("AlchemyIngredients.txt", Context.MODE_PRIVATE))) {
+            wr.write("");
+            wr.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        //Now add each point to the text as you go along.
+        for(int i = 0; i < items.size(); i++){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    addNewIngredient(i + 1, items.get(i).getName(), items.get(i).getType(), items.get(i).getRegion(), items.get(i).getRarity(),
+                                        items.get(i).getLocation(), items.get(i).getProp(), items.get(i).getDescription(), items.get(i).getSpecials());
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private void deleteItemInList(int pos){
+        items.remove(pos);
     }
 
     //Generate the list adapter (Which extends a string list as a premade list.

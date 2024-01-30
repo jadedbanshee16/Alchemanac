@@ -18,6 +18,15 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:id="@+id/item_edit_btn"
+            android:layout_width="49dp"
+            android:layout_height="50dp"
+            android:background="#00223C8A"
+            android:backgroundTint="#002939A1"
+            android:src="@android:drawable/ic_menu_edit"
+            tools:src="@android:drawable/ic_menu_edit" />
+
+        <ImageView
             android:id="@+id/item_picture"
             android:layout_width="match_parent"
             android:layout_height="183dp"
@@ -160,6 +169,21 @@
             android:textAlignment="viewStart"
             android:textSize="20sp" />
 
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1" >
+
+        <Button
+            android:id="@+id/item_delete_btn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:backgroundTint="#A86060"
+            android:gravity="center"
+            android:text="Delete"
+            android:textSize="24sp" />
     </TableRow>
 
 </LinearLayout>
