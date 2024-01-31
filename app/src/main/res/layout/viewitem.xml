@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+<LinearLayout
     android:id="@+id/item_view_background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginLeft="10dp"
     android:layout_marginTop="20dp"
     android:layout_marginRight="10dp"
+    android:elevation="10dp"
     android:background="#8F8F8F"
     android:orientation="vertical">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.8"
         android:orientation="horizontal">
 
         <ImageView
@@ -49,25 +53,31 @@
             tools:src="@android:drawable/btn_dialog" />
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/item_title"
+    <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1.1"
-        android:gravity="center"
-        android:text="Title"
-        android:textAlignment="center"
-        android:textAllCaps="true"
-        android:textSize="34sp"
-        tools:layout_editor_absoluteX="176dp"
-        tools:layout_editor_absoluteY="216dp" />
+        android:layout_height="50dp"
+        android:gravity="bottom|center">
+
+        <TextView
+            android:id="@+id/item_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:gravity="bottom|center"
+            android:text="Title"
+            android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textColor="#3A3A3A"
+            android:textSize="34sp"
+            tools:layout_editor_absoluteX="176dp"
+            tools:layout_editor_absoluteY="216dp" />
+    </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:layout_weight="1.1"
         android:background="#ADC1C1C1">
 
         <TextView
@@ -77,6 +87,7 @@
             android:layout_weight="1"
             android:text="type"
             android:textAlignment="center"
+            android:textColor="#3A3A3A"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -87,26 +98,27 @@
             android:layout_weight="1"
             android:text="rarity"
             android:textAlignment="center"
+            android:textColor="#3A3A3A"
             android:textSize="24sp"
             android:textStyle="bold" />
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:layout_weight="1"
         android:background="#ADC1C1C1"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/item_location_title"
-            android:layout_width="105dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0"
             android:text="Location:"
             android:textAlignment="textStart"
+            android:textColor="#3A3A3A"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -117,26 +129,35 @@
             android:layout_weight="1"
             android:text="desc"
             android:textAlignment="center"
+            android:textColor="#3A3A3A"
             android:textSize="20sp" />
 
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:layout_weight="1"
+        android:background="#ADC1C1C1"
+        android:orientation="horizontal" />
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         android:background="#ADC1C1C1"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/item_properties_title"
-            android:layout_width="120dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0"
             android:text="Properties:"
             android:textAlignment="textStart"
+            android:textColor="#3A3A3A"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -147,16 +168,24 @@
             android:layout_weight="1"
             android:text="desc"
             android:textAlignment="center"
+            android:textColor="#3A3A3A"
             android:textSize="20sp" />
 
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:layout_weight="1"
+        android:background="#ADC1C1C1"
+        android:orientation="horizontal" />
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         android:background="#ADC1C1C1"
         android:orientation="horizontal">
 
@@ -167,14 +196,14 @@
             android:layout_weight="1"
             android:text="desc"
             android:textAlignment="viewStart"
+            android:textColor="#3A3A3A"
             android:textSize="20sp" />
 
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1" >
+        android:layout_height="wrap_content">
 
         <Button
             android:id="@+id/item_delete_btn"
@@ -187,3 +216,4 @@
     </TableRow>
 
 </LinearLayout>
+</ScrollView>

@@ -35,6 +35,7 @@ public class AlchemyClass {
         System.arraycopy(spec, 0, specialProperties, 0, spec.length);
     }
 
+    public int getId() { return id; }
     public String getName(){
         return name;
     }

@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +24,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -37,15 +39,26 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 public class MainActivity2 extends AppCompatActivity {
 
     private ArrayList<AlchemyClass> items = new ArrayList<AlchemyClass>();
+    private ArrayList<AlchemyClass> itemListView = new ArrayList<AlchemyClass>();
 
     private myListAdapter gridviewAdapter = null;
     TextView tex;
+
+    private enum orderTypes{
+        name,
+        type,
+        rarity
+    }
+
+    orderTypes currentOrder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +67,14 @@ public class MainActivity2 extends AppCompatActivity {
         //tex = findViewById(R.id.textView2);
         //Get the main list.
         GridView theView = (GridView) findViewById(R.id.items_list);
+        SearchView searchBar = (SearchView) findViewById(R.id.item_search_bar);
+
+        currentOrder = orderTypes.name;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
-                getNewList(theView);
+                getNewList();
+
+                reorderList(currentOrder);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -73,9 +91,66 @@ public class MainActivity2 extends AppCompatActivity {
                 } ;
             }
         });
+
+        //Create the name sort button.
+        Button nameBtn = (Button) findViewById(R.id.item_sort_name);
+        Button typeBtn = (Button) findViewById(R.id.item_sort_type);
+        Button rarityBtn = (Button) findViewById(R.id.item_sort_rarity);
+
+        nameBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    currentOrder = orderTypes.name;
+                    reorderList(currentOrder);
+                } ;
+            }
+        });
+        typeBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    currentOrder = orderTypes.type;
+                    reorderList(currentOrder);
+                } ;
+            }
+        });
+        rarityBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    currentOrder = orderTypes.rarity;
+                    reorderList(currentOrder);
+                } ;
+            }
+        });
+
+        searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    try {
+                        changeList(query);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    try {
+                        changeList(newText);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return false;
+            }
+        });
+
     }
 
-    public void onButtonShowPopupWindowClick(int index) {
+    public void onButtonShowPopupWindowClick(int index) throws IOException {
 
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater)
@@ -114,14 +189,7 @@ public class MainActivity2 extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-                deleteItemInList(index);
-                try {
-                    saveList();
-                    getNewList(findViewById(R.id.items_list));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                popupWindow.dismiss();
+                onButtonShowConfirmWindowClick(index, popupWindow);
             }
         });
 
@@ -230,9 +298,13 @@ public class MainActivity2 extends AppCompatActivity {
         itemView.findViewById(R.id.submit_btn).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //If making an edit (ising a position above 0), then delete the original.
-                if(pos >= 0){
-                    deleteItemInList(pos);
-                }
+                /*if(pos >= 0){
+                    try {
+                        deleteItemInList(items.get(pos).getId());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }*/
 
                 EditText nam = (EditText) itemView.findViewById(R.id.form_name);
                 Spinner ty = (Spinner) itemView.findViewById(R.id.dropdown_type);
@@ -277,12 +349,35 @@ public class MainActivity2 extends AppCompatActivity {
                 EditText spec = (EditText) itemView.findViewById(R.id.form_special_text);
 
                 String[] specArr = String.valueOf(spec.getText()).split(",");
-                String[] propArr = sb.toString().split(",");
-                AlchemyProperties[] realPropArr = new AlchemyProperties[propArr.length];
-                for(int f = 0; f < realPropArr.length; f++){
-                    realPropArr[f] = AlchemyProperties.valueOf(propArr[f]);
+                AlchemyProperties[] realPropArr;
+                if(!sb.toString().equals("")){
+                    String[] propArr = sb.toString().split(",");
+                    realPropArr = new AlchemyProperties[propArr.length];
+                    for(int f = 0; f < realPropArr.length; f++){
+                        realPropArr[f] = AlchemyProperties.valueOf(propArr[f]);
+                    }
+                } else {
+                    realPropArr = new AlchemyProperties[1];
+                    realPropArr[0] = AlchemyProperties.None;
                 }
 
+                int id = items.size() + 1;
+                if(pos >= 0){
+                    id = items.get(pos).getId();
+                }
+
+                int newPos = -1;
+                //Now set the new list back to normal.
+                try {
+                    changeList("");
+                    for(int i = 0; i < items.size(); i++){
+                        if(items.get(i).getId() == id){
+                            newPos = i;
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
                 AlchemyClass newItem = new AlchemyClass(items.size() + 1, nam.getText().toString(),
                         ty.getSelectedItem().toString(),
@@ -292,12 +387,18 @@ public class MainActivity2 extends AppCompatActivity {
                         realPropArr,
                         desc.getText().toString(),
                         specArr);
-                items.add(newItem);
+
+                if(newPos < 0 || newPos >= items.size()){
+                    items.add(newItem);
+                } else {
+                    items.set(newPos, newItem);
+                }
 
                 //Now, create new list.
                 try {
                     saveList();
-                    getNewList(findViewById(R.id.items_list));
+                    getNewList();
+                    reorderList(currentOrder);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -305,6 +406,55 @@ public class MainActivity2 extends AppCompatActivity {
                 popupWindow.dismiss();
             }
         });
+    }
+
+    public void onButtonShowConfirmWindowClick(int index, PopupWindow theWindow) {
+
+        // inflate the layout of the popup window
+        LayoutInflater inflater = (LayoutInflater)
+                getSystemService(LAYOUT_INFLATER_SERVICE);
+        View itemView = inflater.inflate(R.layout.confirm_view, null);
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.MATCH_PARENT;
+        int height = LinearLayout.LayoutParams.MATCH_PARENT;
+        boolean focusable = true; // lets taps outside the popup also dismiss it
+        final PopupWindow popupWindow = new PopupWindow(itemView, width, height, focusable);
+
+        // show the popup window
+        // which view you pass in doesn't matter, it is only used for the window tolken
+        popupWindow.showAtLocation(itemView, Gravity.CENTER, 0, 0);
+
+
+        //Make the 'X' close the window.
+        itemView.findViewById(R.id.confirm_cancel).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                popupWindow.dismiss();
+            }
+        });
+
+        itemView.findViewById(R.id.confirm_delete).setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onClick(View v) {
+
+                try {
+                    deleteItemInList(items.get(index).getId());
+                    saveList();
+                    getNewList();
+                    reorderList(currentOrder);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                theWindow.dismiss();
+                popupWindow.dismiss();
+            }
+        });
+    }
+
+
+    private void create(AlchemyClass newItem){
+        items.add(newItem);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -326,7 +476,9 @@ public class MainActivity2 extends AppCompatActivity {
         type.setText(Objects.requireNonNull(items.get(ind)).getType());
         rarity.setText(Objects.requireNonNull(items.get(ind)).getRarity());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            backCol.setBackgroundColor(Objects.requireNonNull(items.get(ind)).getCol());
+            Color newCol = Color.valueOf(items.get(ind).getCol());
+            int curCol = Color.rgb(newCol.red(), newCol.green(), newCol.blue());
+            backCol.setBackgroundColor(curCol);
         }
 
         //Get the location and region and link them for full location description.
@@ -394,7 +546,7 @@ public class MainActivity2 extends AppCompatActivity {
     }*/
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void getNewList(GridView v) throws IOException {
+    private void getNewList() throws IOException {
         //Starting string.
         String str = "";
         //Read the file.
@@ -443,14 +595,74 @@ public class MainActivity2 extends AppCompatActivity {
         }
 
         r.close();
+    }
 
+    private void setTheList(GridView v){
         v.setAdapter(null);
         gridviewAdapter = new myListAdapter(this, R.layout.listitem, items);
         //Now create the new points.
         v.setAdapter(gridviewAdapter);
     }
 
-    private void saveList() throws FileNotFoundException {
+    //Reorder the list to different variants.
+    private void reorderList(orderTypes theOrder){
+        //Reorder by name in alphabet
+        if(theOrder == orderTypes.name){
+            Collections.sort(items, new Comparator<AlchemyClass>() {
+                @Override
+                public int compare(AlchemyClass c1, AlchemyClass c2) {
+                    return c1.getName().toLowerCase().compareTo(c2.getName().toLowerCase());
+                }
+            });
+        }
+
+        //Reorder by type in enum
+        if(theOrder == orderTypes.type){
+            Collections.sort(items, new Comparator<AlchemyClass>() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
+                @Override
+                public int compare(AlchemyClass c1, AlchemyClass c2) {
+                    return AlchemyTypes.valueOf(c1.getType()).compareTo(AlchemyTypes.valueOf(c2.getType()));
+                }
+            });
+        }
+
+        //Reorder by rarity in enum
+        if(theOrder == orderTypes.rarity){
+            Collections.sort(items, new Comparator<AlchemyClass>() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
+                @Override
+                public int compare(AlchemyClass c1, AlchemyClass c2) {
+                    return AlchemyRarity.valueOf(c1.getRarity()).compareTo(AlchemyRarity.valueOf(c2.getRarity()));
+                }
+            });
+        }
+
+        setTheList(findViewById(R.id.items_list));
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void changeList(String query) throws IOException {
+        //Start new list.
+        getNewList();
+        ArrayList<AlchemyClass> newList = new ArrayList<AlchemyClass>();
+
+        //Now, add to new list if current list properties contains query.
+        for(int i = 0; i < items.size(); i++){
+            if(items.get(i).getProperties().toLowerCase().contains(query.toLowerCase())){
+                newList.add(items.get(i));
+            }
+        }
+
+        //Now make items the new list.
+        items = new ArrayList<AlchemyClass>();
+        items.addAll(newList);
+
+        setTheList(findViewById(R.id.items_list));
+
+    }
+
+    private void saveList() throws IOException {
         //First, clear the list.
         try (OutputStreamWriter wr = new OutputStreamWriter(this.openFileOutput("AlchemyIngredients.txt", Context.MODE_PRIVATE))) {
             wr.write("");
@@ -463,6 +675,16 @@ public class MainActivity2 extends AppCompatActivity {
         for(int i = 0; i < items.size(); i++){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 try {
+                    String p = items.get(i).getProp();
+                    String[] p2 = p.split(",");
+                    AlchemyProperties[] prop = new AlchemyProperties[p2.length];
+                    for(int c = 0; c < prop.length; c++){
+                        prop[c] = AlchemyProperties.valueOf(p2[c]);
+                    }
+                    String[] s = items.get(i).getSpecials().split(",");
+
+                    /*create(new AlchemyClass(i + 1, items.get(i).getName(), items.get(i).getType(), items.get(i).getRegion(), items.get(i).getRarity(),
+                            AlchemyLocation.valueOf(items.get(i).getLocation()), prop, items.get(i).getDescription(), s));*/
                     addNewIngredient(i + 1, items.get(i).getName(), items.get(i).getType(), items.get(i).getRegion(), items.get(i).getRarity(),
                                         items.get(i).getLocation(), items.get(i).getProp(), items.get(i).getDescription(), items.get(i).getSpecials());
                 } catch (FileNotFoundException e) {
@@ -472,8 +694,17 @@ public class MainActivity2 extends AppCompatActivity {
         }
     }
 
-    private void deleteItemInList(int pos){
-        items.remove(pos);
+    private void deleteItemInList(int pos) throws IOException {
+        //Ensure full item list is being used in background.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            changeList("");
+        }
+        for(int i = 0; i < items.size(); i++){
+            if(items.get(i).getId() == pos){
+                items.remove(i);
+                return;
+            }
+        }
     }
 
     //Generate the list adapter (Which extends a string list as a premade list.
@@ -500,16 +731,21 @@ public class MainActivity2 extends AppCompatActivity {
                 //Create, set and return the item views.
                 viewHolder view = new viewHolder();
                 view.button = (Button) convertView.findViewById(R.id.item_btn);
+                view.tex = (TextView) convertView.findViewById(R.id.item_name);
                 view.img = (ImageView) convertView.findViewById(R.id.item_img);
                 view.img.setImageDrawable(getDrawable(Objects.requireNonNull(getItem(position)).getIcon()));
                 view.button.setBackgroundColor(Objects.requireNonNull(getItem(position)).getCol());
-                view.button.setText(Objects.requireNonNull(getItem(position)).getName());
+                view.tex.setText(Objects.requireNonNull(getItem(position)).getName());
                 //set listener.
                 view.button.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
 
                         //changeName(view.button.getText().toString());
-                        onButtonShowPopupWindowClick(position);
+                        try {
+                            onButtonShowPopupWindowClick(position);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 });
                 convertView.setTag(view);
@@ -517,7 +753,7 @@ public class MainActivity2 extends AppCompatActivity {
                 mainView = (viewHolder) convertView.getTag();
                 //Set name of the mainView.
                 mainView.button.setBackgroundColor(Objects.requireNonNull(getItem(position)).getCol());
-                mainView.button.setText(Objects.requireNonNull(getItem(position)).getName());
+                mainView.tex.setText(Objects.requireNonNull(getItem(position)).getName());
                 mainView.img.setImageDrawable(getDrawable(Objects.requireNonNull(getItem(position)).getIcon()));
             }
 
@@ -529,16 +765,6 @@ public class MainActivity2 extends AppCompatActivity {
     public class viewHolder {
         Button button;
         ImageView img;
-    }
-
-    private void removeChildren(GridView v){
-        v.removeAllViews();
-    }
-
-    private void changeName(String name){
-        String s = "Hello " + name;
-        tex.setText(s);
-
-        Log.d("BUTTONS", "User tapped the Supabutton");
+        TextView tex;
     }
 }

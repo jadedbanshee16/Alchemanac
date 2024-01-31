@@ -4,26 +4,66 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/alchemy"
     android:gravity="center"
     android:orientation="vertical"
     tools:visibility="visible">
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#DC757575"
+        android:gravity="center|left">
+
+        <Button
+            android:id="@+id/item_sort_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoSizeTextType="uniform"
+            android:text="Name" />
+
+        <Button
+            android:id="@+id/item_sort_rarity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoSizeTextType="uniform"
+            android:text="Rarity" />
+
+        <Button
+            android:id="@+id/item_sort_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoSizeTextType="uniform"
+            android:text="Type" />
+
+        <ImageButton
+            android:id="@+id/create_btn"
+            android:layout_width="90dp"
+            android:layout_height="35dp"
+            android:background="#5D8337"
+            android:foregroundGravity="center|right"
+            android:src="@android:drawable/ic_input_add"
+            app:tint="#000000" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <SearchView
+            android:id="@+id/item_search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#DC757575" />
+    </TableRow>
 
     <GridView
         android:id="@+id/items_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:numColumns="3"
-        android:layout_weight="0.1" >
+        android:background="#CD9E9E9E"
+        android:numColumns="3">
 
     </GridView>
-
-    <ImageButton
-        android:id="@+id/create_btn"
-        android:layout_width="50dp"
-        android:layout_height="100dp"
-        android:layout_weight="0.1"
-        android:background="#5D8337"
-        android:src="@android:drawable/ic_input_add"
-        app:tint="#000000" />
 
 </LinearLayout>
