@@ -36,6 +36,7 @@ public class AlchemyClass {
     }
 
     public int getId() { return id; }
+    public void setId(int ind){ id = ind; }
     public String getName(){
         return name;
     }
@@ -89,6 +90,44 @@ public class AlchemyClass {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public int getIcon(){
         return type.img;
+    }
+
+    public String convetToString(){
+        String str = "";
+        StringBuffer sb = new StringBuffer();
+
+        //Add everything above into a one line string.
+        sb.append(getId());
+        sb.append(":");
+        if(getName().equals("")){
+            name = "Unknown";
+        }
+        sb.append(getName());
+        sb.append(":");
+        sb.append(getType());
+        sb.append(":");
+        sb.append(getRegion());
+        sb.append(":");
+        sb.append(getRarity());
+        sb.append(":");
+        sb.append(getLocation());
+        sb.append(":");
+        if(getProp().equals("")){
+            propertiesList = new AlchemyProperties[]{AlchemyProperties.None};
+        }
+        sb.append(getProp());
+        sb.append(":");
+        if(getDescription().equals("")){
+            description = "None";
+        }
+        sb.append(getDescription());
+        sb.append(":");
+        if(getSpecials().equals("")){
+            specialProperties = new String[]{"None"};
+        }
+        sb.append(getSpecials());
+
+        return sb.toString();
     }
 
 
