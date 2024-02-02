@@ -35,12 +35,16 @@ public class AlchemyClass {
         System.arraycopy(spec, 0, specialProperties, 0, spec.length);
     }
 
+    public int getId() { return id; }
+    public void setId(int ind){ id = ind; }
     public String getName(){
         return name;
     }
     public String getType() { return type.name(); }
     public String getRarity() { return rarity.name(); }
     public String getLocationFull() { return region.name() + ", " + location.name();}
+    public String getRegion(){ return region.name(); }
+    public String getLocation() { return location.name(); }
     public String getProperties() {
         //Convert properties into a string list.
         String[] p = new String[propertiesList.length];
@@ -54,7 +58,29 @@ public class AlchemyClass {
 
         return String.join(", ", p) + ", " + String.join(", ", p2);
     }
+
+    public String getProperty(int ind){ return propertiesList[ind].name(); }
+
+    public String getProp() {
+        String[] p = new String[propertiesList.length];
+        for(int i = 0; i < propertiesList.length; i++){
+            p[i] = propertiesList[i].name();
+        }
+
+        return String.join(",", p);
+    }
+    public int getPropertySize() { return propertiesList.length; }
+
     public String getDescription() { return description; }
+
+    public String getSpecials() {
+        String[] p2 = new String[specialProperties.length];
+        for(int i = 0; i < p2.length; i++){
+            p2[i] = specialProperties[i];
+        }
+
+        return String.join(",", p2);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public int getCol(){
@@ -64,6 +90,44 @@ public class AlchemyClass {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public int getIcon(){
         return type.img;
+    }
+
+    public String convetToString(){
+        String str = "";
+        StringBuffer sb = new StringBuffer();
+
+        //Add everything above into a one line string.
+        sb.append(getId());
+        sb.append(":");
+        if(getName().equals("")){
+            name = "Unknown";
+        }
+        sb.append(getName());
+        sb.append(":");
+        sb.append(getType());
+        sb.append(":");
+        sb.append(getRegion());
+        sb.append(":");
+        sb.append(getRarity());
+        sb.append(":");
+        sb.append(getLocation());
+        sb.append(":");
+        if(getProp().equals("")){
+            propertiesList = new AlchemyProperties[]{AlchemyProperties.None};
+        }
+        sb.append(getProp());
+        sb.append(":");
+        if(getDescription().equals("")){
+            description = "None";
+        }
+        sb.append(getDescription());
+        sb.append(":");
+        if(getSpecials().equals("")){
+            specialProperties = new String[]{"None"};
+        }
+        sb.append(getSpecials());
+
+        return sb.toString();
     }
 
 
