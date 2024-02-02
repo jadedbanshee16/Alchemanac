@@ -9,5 +9,7 @@ public enum AlchemyLocation {
     reef,
     ocean,
     jungle,
-    towns
+    towns,
+    unknown,
+    anywhere
 }
