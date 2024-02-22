@@ -5,6 +5,6 @@
 5:Starlight Dust:special:Unknown:otherworldy:forest:Dark,Light:A silvery dust that glows softly:none
 6:Baleful Wolf Eye:fauna:Unknown:legendary:anywhere:None:A Giant slightly glowing eye that seems to follow your movement.:freeze those who look at it
 7:Human Mage Dust:special:Anywhere:legendary:anywhere:None:Black dust crumbled from the corpse of a human.:Unknown
-8:Dragon Breath:fauna:Anywhere:legendary:anywhere:None:Bottle of Aerate of Dragon:Properties in Air and strong in different types depending on colour. (Black - Fire, Blue - Water, Green - Life)
+8:Dragon Breath:fauna:Anywhere:legendary:anywhere:Air:Bottle of Aerate of Dragon:Strong in different types depending on colour. (Black - Fire, Blue - Water, Green - Life)
 9:Earth Essence:mineral:Unknown:rare:unknown:None:The essence of normal magic earth:Magical units of Earth
-10:Windwafer:special:Unknown:rare:unknown:None:Invisible little plastic like sheet:Air properties
+10:Windwafer:special:Unknown:rare:unknown:Air:Invisible little plastic like sheet:None

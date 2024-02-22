@@ -45,6 +45,25 @@ import java.util.List;
 import java.util.Objects;
 
 public class MainActivity2 extends AppCompatActivity {
+    class propertyArray{
+        String name;
+        boolean used;
+
+        propertyArray(String n, boolean b){
+            name = n;
+            used = b;
+        }
+
+        public String getName(){
+            return name;
+        }
+        public boolean getIsUsed(){
+            return used;
+        }
+        public void setIsUsed(boolean b){
+            used = b;
+        }
+    }
     private ArrayList<AlchemyClass> itemListView = new ArrayList<AlchemyClass>();
 
     private AlchemyListClass items = new AlchemyListClass();
@@ -180,16 +199,6 @@ public class MainActivity2 extends AppCompatActivity {
                 onButtonShowConfirmWindowClick(index, popupWindow);
             }
         });
-
-        // dismiss the popup window when touched
-        //DEBUG ONLY
-        /*itemView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                popupWindow.dismiss();
-                return true;
-            }
-        });*/
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -215,6 +224,16 @@ public class MainActivity2 extends AppCompatActivity {
         Spinner locationSpinner = (Spinner) itemView.findViewById(R.id.dropdown_location);
         locationSpinner.setAdapter(new ArrayAdapter<AlchemyLocation>(this, android.R.layout.simple_spinner_item, AlchemyLocation.values()));
 
+        //Create the gridview.
+        GridView propertyGrid = (GridView) itemView.findViewById(R.id.propertyGrid);
+
+        //Populate the property array with whether it was used.
+
+        ArrayList<propertyArray> propArr = new ArrayList<propertyArray>();
+        for(int i = 0; i < AlchemyProperties.values().length; i++){
+            propArr.add(new propertyArray(AlchemyProperties.values()[i].toString(), false));
+        }
+
         //Now, if position is valid (0 or over, then add that stuff to the set.
         if(!isNew){
             typeSpinner.setSelection(AlchemyTypes.valueOf(itemListView.get(pos).getType()).ordinal());
@@ -222,41 +241,18 @@ public class MainActivity2 extends AppCompatActivity {
             regionSpinner.setSelection(AlchemyRegion.valueOf(itemListView.get(pos).getRegion()).ordinal());
             locationSpinner.setSelection(AlchemyLocation.valueOf(itemListView.get(pos).getLocation()).ordinal());
 
-            CheckBox box;
-            //Set the dropbox systems.
-            for(int i = 0; i < itemListView.get(pos).getPropertySize(); i++){
+            //Get the property list.
+            String[] currentPropArr = new String[itemListView.get(pos).getPropertySize()];
+            for(int i = 0; i < currentPropArr.length; i++){
+                currentPropArr[i] = itemListView.get(pos).getProperty(i);
+            }
 
-                if(AlchemyProperties.valueOf(itemListView.get(pos).getProperty(i)).ordinal() == 0){
-                    box = (CheckBox) itemView.findViewById(R.id.propbox1);
-                    box.setChecked(true);
-                }
-                if(AlchemyProperties.valueOf(itemListView.get(pos).getProperty(i)).ordinal() == 1){
-                    box = (CheckBox) itemView.findViewById(R.id.propbox2);
-                    box.setChecked(true);
-                }
-                if(AlchemyProperties.valueOf(itemListView.get(pos).getProperty(i)).ordinal() == 2){
-                    box = (CheckBox) itemView.findViewById(R.id.propbox3);
-                    box.setChecked(true);
-                }
-                if(AlchemyProperties.valueOf(itemListView.get(pos).getProperty(i)).ordinal() == 3){
-                    box = (CheckBox) itemView.findViewById(R.id.propbox4);
-                    box.setChecked(true);
-                }
-                if(AlchemyProperties.valueOf(itemListView.get(pos).getProperty(i)).ordinal() == 4){
-                    box = (CheckBox) itemView.findViewById(R.id.propbox5);
-                    box.setChecked(true);
-                }
-                if(AlchemyProperties.valueOf(itemListView.get(pos).getProperty(i)).ordinal() == 5){
-                    box = (CheckBox) itemView.findViewById(R.id.propbox6);
-                    box.setChecked(true);
-                }
-                if(AlchemyProperties.valueOf(itemListView.get(pos).getProperty(i)).ordinal() == 6){
-                    box = (CheckBox) itemView.findViewById(R.id.propbox7);
-                    box.setChecked(true);
-                }
-                if(AlchemyProperties.valueOf(itemListView.get(pos).getProperty(i)).ordinal() == 7){
-                    box = (CheckBox) itemView.findViewById(R.id.propbox8);
-                    box.setChecked(true);
+            //Now make changes to propArr based on the new list.
+            for(int i = 0; i < propArr.size(); i++){
+                for(int v = 0; v < currentPropArr.length; v++){
+                    if(propArr.get(i).getName().equals(currentPropArr[v])){
+                        propArr.get(i).setIsUsed(true);
+                    }
                 }
             }
 
@@ -269,6 +265,10 @@ public class MainActivity2 extends AppCompatActivity {
             EditText desc = (EditText) itemView.findViewById(R.id.form_description_text);
             desc.setText(itemListView.get(pos).getDescription());
         }
+
+        myPropertyAdapter propertyAdap = new myPropertyAdapter(this, R.layout.property_item, propArr);
+        propertyGrid.setAdapter(propertyAdap);
+        propertyGrid.refreshDrawableState();
 
 
         //Make the cancel button close the window.
@@ -291,8 +291,24 @@ public class MainActivity2 extends AppCompatActivity {
 
                 //Create a list to keep the propBox strings.
                 ArrayList<String> propList = new ArrayList<String>();
+
+                int size = propertyGrid.getChildCount();
+
+                for(int i = 0; i < size; i++){
+                    //Get the checkbox of the grid.
+                    ViewGroup group = (ViewGroup) propertyGrid.getChildAt(i);
+                    for(int c = 0; c < group.getChildCount(); c++){
+                        if(group.getChildAt(c) instanceof CheckBox){
+                            CheckBox box = (CheckBox) group.getChildAt(c);
+                            if(box.isChecked()){
+                                propList.add(box.getText().toString());
+                            }
+                        }
+                    }
+                }
+
                 //Get the 2 layouts.
-                LinearLayout l1 = (LinearLayout) itemView.findViewById(R.id.PropboxLayout1);
+                /*LinearLayout l1 = (LinearLayout) itemView.findViewById(R.id.PropboxLayout1);
                 LinearLayout l2 = (LinearLayout) itemView.findViewById(R.id.PropboxLayout2);
                 //Now iterate and get children in each layout.
                 for(int i = 0; i < l1.getChildCount(); i++){
@@ -310,7 +326,7 @@ public class MainActivity2 extends AppCompatActivity {
                         //Now add the name value as sting.
                         propList.add(b.getText().toString());
                     }
-                }
+                }*/
 
                 //Add all the strings together.
                 StringBuffer sb = new StringBuffer();
@@ -541,6 +557,15 @@ public class MainActivity2 extends AppCompatActivity {
         }
     }
 
+    private boolean isInList(String s, String[] properties){
+        for(int i = 0; i < properties.length; i++){
+            if(s.equals(properties[i])){
+                return true;
+            }
+        }
+        return false;
+    }
+
     //Generate the list adapter (Which extends a string list as a premade list.
     private class myListAdapter extends ArrayAdapter<AlchemyClass> {
         //Create a layout object.
@@ -600,5 +625,50 @@ public class MainActivity2 extends AppCompatActivity {
         Button button;
         ImageView img;
         TextView tex;
+    }
+
+    //Generate the list adapter (Which extends a string list as a premade list.
+    private class myPropertyAdapter extends ArrayAdapter<propertyArray> {
+        //Create a layout object.
+        private int layout;
+        private String[] itemChecked;
+        public myPropertyAdapter(@NonNull Context context, int resource, @NonNull List<propertyArray> objects) {
+            super(context, resource, objects);
+            //Save the resource number to the layout num.
+            layout = resource;
+        }
+
+        //Create the 'get' method using getview.
+        @SuppressLint("UseCompatLoadingForDrawables")
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            viewHolderPropertiesGrid mainView = null;
+            if(convertView == null){
+                //Create an inflator (essentially it creates a layout of the view as an instance)
+                LayoutInflater inflator = LayoutInflater.from(getContext());
+                convertView = inflator.inflate(layout, parent, false);
+
+                //Create, set and return the item views.
+                viewHolderPropertiesGrid view = new viewHolderPropertiesGrid();
+                view.checkBox = (CheckBox) convertView.findViewById(R.id.property_checkbox);
+                view.checkBox.setText(getItem(position).getName());
+                view.checkBox.setChecked(getItem(position).getIsUsed());
+
+                convertView.setTag(view);
+            } else {
+                mainView = (viewHolderPropertiesGrid) convertView.getTag();
+                //Set name of the mainView.
+                mainView.checkBox.setText(getItem(position).getName());
+                mainView.checkBox.setChecked(getItem(position).getIsUsed());
+            }
+
+            return convertView;
+        }
+    }
+
+    //Create a constructor class to hold the provided button.\
+    public class viewHolderPropertiesGrid {
+        CheckBox checkBox;
     }
 }

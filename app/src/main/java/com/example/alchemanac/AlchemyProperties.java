@@ -8,5 +8,6 @@ public enum AlchemyProperties {
     Death,
     Light,
     Dark,
+    Air,
     None
 }
